@@ -5,12 +5,18 @@ const app = express();
 
 app.use(express.json());
 
+let mongoStatus = "Connecting...";
+let mongoError = "";
+
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => {
+    mongoStatus = "Connected";
     console.log("MongoDB Connected Successfully");
   })
   .catch((err: any) => {
+    mongoStatus = "Failed";
+    mongoError = err.message;
     console.error("MongoDB Connection Error:", err);
   });
 
@@ -24,7 +30,8 @@ app.get("/", (req, res) => {
 app.get("/health", (req, res) => {
   res.json({
     mongodb: mongoose.connection.readyState,
-    status: "OK",
+    status: mongoStatus,
+    error: mongoError,
   });
 });
 
