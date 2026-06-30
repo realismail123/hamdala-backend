@@ -1,26 +1,22 @@
-app.get("/api/test", (req, res) => {
-  res.json({
-    success: true,
-    message: "API is working"
-  });
-});
-
-import express = require("express");
-const mongoose = require("mongoose");
+import express from "express";
+import cors from "cors";
+import mongoose from "mongoose";
 import authRoutes from "./routes/auth";
 
 const app = express();
 
+// Middleware
+app.use(cors());
 app.use(express.json());
 
-// Register auth routes
+// Routes
 app.use("/api", authRoutes);
 
 let mongoStatus = "Connecting...";
 let mongoError = "";
 
 mongoose
-  .connect(process.env.MONGODB_URI)
+  .connect(process.env.MONGODB_URI as string)
   .then(() => {
     mongoStatus = "Connected";
     console.log("MongoDB Connected Successfully");
@@ -31,6 +27,7 @@ mongoose
     console.error("MongoDB Connection Error:", err);
   });
 
+// Home
 app.get("/", (req, res) => {
   res.json({
     success: true,
@@ -38,11 +35,20 @@ app.get("/", (req, res) => {
   });
 });
 
+// Health Check
 app.get("/health", (req, res) => {
   res.json({
     mongodb: mongoose.connection.readyState,
     status: mongoStatus,
     error: mongoError,
+  });
+});
+
+// Test Route
+app.get("/api/test", (req, res) => {
+  res.json({
+    success: true,
+    message: "API is working",
   });
 });
 
