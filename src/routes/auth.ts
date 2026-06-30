@@ -1,5 +1,7 @@
 import express from "express";
 import User from "../models/User";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 const router = express.Router();
 
@@ -17,20 +19,35 @@ router.post("/register", async (req, res) => {
       });
     }
 
-    const user = new User({
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
       fullname,
       phone,
-      password,
+      password: hashedPassword,
     });
 
-    await user.save();
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET as string,
+      {
+        expiresIn: "7d",
+      }
+    );
 
     res.status(201).json({
       success: true,
       message: "Registration successful",
-      user,
+      token,
+      user: {
+        id: user._id,
+        fullname: user.fullname,
+        phone: user.phone,
+      },
     });
   } catch (error) {
+    console.log(error);
+
     res.status(500).json({
       success: false,
       message: "Server Error",
@@ -43,7 +60,7 @@ router.post("/login", async (req, res) => {
   try {
     const { phone, password } = req.body;
 
-    const user = await User.findOne({ phone, password });
+    const user = await User.findOne({ phone });
 
     if (!user) {
       return res.status(400).json({
@@ -52,12 +69,36 @@ router.post("/login", async (req, res) => {
       });
     }
 
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid phone or password",
+      });
+    }
+
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET as string,
+      {
+        expiresIn: "7d",
+      }
+    );
+
     res.json({
       success: true,
       message: "Login successful",
-      user,
+      token,
+      user: {
+        id: user._id,
+        fullname: user.fullname,
+        phone: user.phone,
+      },
     });
   } catch (error) {
+    console.log(error);
+
     res.status(500).json({
       success: false,
       message: "Server Error",
