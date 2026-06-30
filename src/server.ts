@@ -1,3 +1,10 @@
+app.get("/api/test", (req, res) => {
+  res.json({
+    success: true,
+    message: "API is working"
+  });
+});
+
 import express = require("express");
 const mongoose = require("mongoose");
 import authRoutes from "./routes/auth";
