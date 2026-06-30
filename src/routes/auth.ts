@@ -3,6 +3,7 @@ import User from "../models/User";
 
 const router = express.Router();
 
+// Register
 router.post("/register", async (req, res) => {
   try {
     const { fullname, phone, password } = req.body;
@@ -27,6 +28,33 @@ router.post("/register", async (req, res) => {
     res.status(201).json({
       success: true,
       message: "Registration successful",
+      user,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+});
+
+// Login
+router.post("/login", async (req, res) => {
+  try {
+    const { phone, password } = req.body;
+
+    const user = await User.findOne({ phone, password });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid phone or password",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Login successful",
       user,
     });
   } catch (error) {
