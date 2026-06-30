@@ -1,9 +1,13 @@
 import express = require("express");
 const mongoose = require("mongoose");
+import authRoutes from "./routes/auth";
 
 const app = express();
 
 app.use(express.json());
+
+// Register auth routes
+app.use("/api", authRoutes);
 
 let mongoStatus = "Connecting...";
 let mongoError = "";
