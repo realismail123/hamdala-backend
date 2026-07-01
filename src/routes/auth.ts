@@ -1,3 +1,4 @@
+import { verifyToken, AuthRequest } from "../middleware/auth";
 import express from "express";
 import User from "../models/User";
 import bcrypt from "bcryptjs";
@@ -105,5 +106,10 @@ router.post("/login", async (req, res) => {
     });
   }
 });
-
+router.get("/profile", verifyToken, async (req: AuthRequest, res) => {
+  res.json({
+    success: true,
+    user: req.user,
+  });
+});
 export default router;
